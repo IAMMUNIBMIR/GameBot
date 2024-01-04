@@ -11,40 +11,73 @@ trainer = ChatterBotCorpusTrainer(chatbot)
 # Train the chat bot on the English language data
 trainer.train('chatterbot.corpus.english')
 
-# Game Recommendations
-def game_recommendation(user_input):
-    # Assuming the user input follows a format like "Recommend a [genre] game for [platform]."
-    chatbot_response = chatbot.get_response(user_input)
+def get_chatbot_response(question):
+    # Function to get a valid response from the chatbot
+    response = input(question).lower()
+    
+    # Check if the response contains a valid genre or platform
+    while response not in ["action", "adventure", "strategy", "rpg", "sports", "pc", "playstation", "xbox", "nintendo"]:
+        print("Bot: I'm sorry, I didn't understand. Please provide a valid response.")
+        response = input(question).lower()
 
-    # Extract genre and platform from user input
-    # Implement logic to fetch game recommendations using the RAWG API
-    genre = "action"  # Extracted from user input or use a default
-    platform = "pc"   # Extracted from user input or use a default
+    return response
 
+# Ask the user for the game genre
+genre_response = get_chatbot_response("Bot: What genre of game are you interested in? ")
+genre = genre_response
 
-    rawg_api_key = "ae0b6ed4860f4e04ae2e3e91a422962b"
-    rawg_api_url = f"https://api.rawg.io/api/games?key={rawg_api_key}&genres={genre}&platforms={platform}"
+# Ask the user for the gaming platform
+platform_response = get_chatbot_response("Bot: Which gaming platform are you using? ")
+platform = platform_response
+
+print(f"Genre: {genre}, Platform: {platform}")
+
+# RAWG API configuration
+RAWG_API_KEY = "9b200d234d87425fbe262cc2b1635172"
+
+def get_game_recommendations(genre, platform):
+    params = {
+        "key": RAWG_API_KEY,
+        "genres": genre,
+        "platforms": platform,
+    }
 
     try:
-        response = requests.get(rawg_api_url)
-        data = response.json()
+        Url = f"https://api.rawg.io/api/games?key={RAWG_API_KEY}&genres={genre}&platform={platform}"
+        response = requests.get(Url)
+        print(f"API Response: {response.text}")
 
-        if response.status_code == 200 and 'results' in data:
-            # Assume results contain a list of game recommendations
-            recommendations = [game['name'] for game in data['results']]
-            return f"I recommend these games: {', '.join(recommendations)}"
+        if response.status_code == 200:
+            data = response.json()
+            results = data.get("results", [])
+
+            if results:
+                print("Top game recommendations:")
+                for index, game in enumerate(results[:5], start=1):
+                    game_name = game.get("name", "No game name found")
+                    print(f"{index}. {game_name}")
+
+                # Allow the user to choose a game from the list
+                choice = input("Enter the number of the game you want to play (or type 'exit' to quit): ")
+
+                if choice.lower() == 'exit':
+                    print("Goodbye!")
+                    return
+
+                try:
+                    choice_index = int(choice) - 1
+                    chosen_game = results[choice_index].get("name", "No game name found")
+                    print(f"You chose to play: {chosen_game}")
+                except (ValueError, IndexError):
+                    print("Invalid choice. Please enter a valid number.")
+
+            else:
+                print("No game recommendations found.")
         else:
-            return "Sorry, I couldn't fetch game recommendations at the moment."
+            print(f"Failed to retrieve game recommendations. Status code: {response.status_code}")
 
-    except Exception as e:
-        print(f"Error fetching game recommendations: {e}")
-        return "Sorry, an error occurred while fetching game recommendations."
+    except requests.RequestException as e:
+        print(f"Error making API request: {e}")
 
-# Example usage
-user_input = input("You: ")
-while user_input.lower() != 'exit':
-    response = game_recommendation(user_input)
-    print("Bot:", response)
-    user_input = input("You: ")
-
-print("Goodbye!")
+if __name__ == "__main__":
+    get_game_recommendations(genre, platform)
