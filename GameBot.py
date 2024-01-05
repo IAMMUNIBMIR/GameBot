@@ -13,71 +13,75 @@ trainer.train('chatterbot.corpus.english')
 
 def get_chatbot_response(question):
     # Function to get a valid response from the chatbot
-    response = input(question).lower()
-    
-    # Check if the response contains a valid genre or platform
-    while response not in ["action", "adventure", "strategy", "rpg", "sports", "pc", "playstation", "xbox", "nintendo"]:
-        print("Bot: I'm sorry, I didn't understand. Please provide a valid response.")
-        response = input(question).lower()
+    response = chatbot.get_response(question).text.lower()
 
     return response
 
-# Ask the user for the game genre
-genre_response = get_chatbot_response("Bot: What genre of game are you interested in? ")
-genre = genre_response
+def daily_conversation(user_input):
+    # Function to carry out daily conversations
+    response = get_chatbot_response(user_input)
+    print("Bot:", response)
 
-# Ask the user for the gaming platform
-platform_response = get_chatbot_response("Bot: Which gaming platform are you using? ")
-platform = platform_response
+def get_game_recommendations():
+    # Function to get game recommendations based on genre and platform
+    RAWG_API_KEY = "69e524c5cc224ca4a194b46ed4fafedf"
 
-print(f"Genre: {genre}, Platform: {platform}")
+    # Ask the user for the game genre
+    genre_response = input("Bot: What genre of game are you interested in? ")
+    genre = genre_response.lower()
 
-# RAWG API configuration
-RAWG_API_KEY = "9b200d234d87425fbe262cc2b1635172"
+    # Ask the user for the gaming platform
+    platform = input("Bot: Which gaming platform are you using? ")
 
-def get_game_recommendations(genre, platform):
-    params = {
-        "key": RAWG_API_KEY,
-        "genres": genre,
-        "platforms": platform,
-    }
+    print(f"Bot: Great choice! Let me find some {genre} games for you on {platform}...")
 
     try:
-        Url = f"https://api.rawg.io/api/games?key={RAWG_API_KEY}&genres={genre}&platform={platform}"
-        response = requests.get(Url)
-        print(f"API Response: {response.text}")
+        Rawg_Api_Url = f"https://api.rawg.io/api/games?key={RAWG_API_KEY}&genres={genre}&platform={platform}"
+        response = requests.get(Rawg_Api_Url)
 
         if response.status_code == 200:
             data = response.json()
             results = data.get("results", [])
 
             if results:
-                print("Top game recommendations:")
+                print("\nTop game recommendations:")
                 for index, game in enumerate(results[:5], start=1):
                     game_name = game.get("name", "No game name found")
                     print(f"{index}. {game_name}")
 
                 # Allow the user to choose a game from the list
-                choice = input("Enter the number of the game you want to play (or type 'exit' to quit): ")
+                choice = input("\nEnter the number of the game you want to play (or type 'exit' to quit): ")
 
                 if choice.lower() == 'exit':
-                    print("Goodbye!")
+                    print("Bot: Goodbye! Have a great day.")
                     return
 
                 try:
                     choice_index = int(choice) - 1
                     chosen_game = results[choice_index].get("name", "No game name found")
-                    print(f"You chose to play: {chosen_game}")
+                    print(f"Bot: Excellent choice! You've chosen to play: {chosen_game}")
                 except (ValueError, IndexError):
-                    print("Invalid choice. Please enter a valid number.")
+                    print("Bot: Invalid choice. Please enter a valid number.")
 
             else:
-                print("No game recommendations found.")
+                print("Bot: I couldn't find any game recommendations. Sorry about that.")
         else:
-            print(f"Failed to retrieve game recommendations. Status code: {response.status_code}")
+            print(f"Bot: Failed to retrieve game recommendations. Status code: {response.status_code}")
 
     except requests.RequestException as e:
-        print(f"Error making API request: {e}")
+        print(f"Bot: Error making API request: {e}")
 
 if __name__ == "__main__":
-    get_game_recommendations(genre, platform)
+    print("Bot: Hi there! I'm GameRecommendationBot. I can chat with you and even recommend games. If you want game recommendations, just type '/game'. If you need help, type '/help'.")
+
+    while True:
+        user_input = input("You: ")
+
+        if user_input == '/help':
+            print("Bot: I can chat with you and recommend games. To get game recommendations, type '/game'.")
+        elif user_input == '/game':
+            # Get game recommendations
+            get_game_recommendations()
+        else:
+            # Carry out daily conversation
+            daily_conversation(user_input)
