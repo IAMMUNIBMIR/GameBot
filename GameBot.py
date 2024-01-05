@@ -80,8 +80,6 @@ if __name__ == "__main__":
         if user_input == '/help':
             print("Bot: I can chat with you and recommend games. To get game recommendations, type '/game'.")
         elif user_input == '/game':
-            # Get game recommendations
             get_game_recommendations()
         else:
-            # Carry out daily conversation
             daily_conversation(user_input)

@@ -6,22 +6,15 @@ Welcome to the Game Recommendation Bot, a simple chatbot project that recommends
 
 1. **Clone the repository.**
 
-    ```bash
     git clone https://github.com/your-username/game-recommendation-bot.git
-    cd game-recommendation-bot
-    ```
 
 2. **Install dependencies.**
 
-    ```bash
-    pip install -r requirements.txt
-    ```
+    View the list of dependencies in Requirements below.
 
 3. **Run the bot.**
 
-    ```bash
-    python game_recommendation_bot.py
-    ```
+    python(3) game_recommendation_bot.py
 
 ## Requirements
 
